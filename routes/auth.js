@@ -15,8 +15,7 @@ router.post(
   [
     body('email')
       .isEmail()
-      .withMessage('Please enter a valid email address')
-      .normalizeEmail(),
+      .withMessage('Please enter a valid email address'),
     body(
       'password',
       'Please enter a password with only numbers and text and at least 5 characters.'
