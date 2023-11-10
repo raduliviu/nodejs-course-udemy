@@ -1,5 +1,7 @@
 const { validationResult } = require('express-validator');
 
+const fileHelper = require('../util/file');
+
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
@@ -126,6 +128,7 @@ exports.postEditProduct = (req, res, next) => {
       product.title = updatedTitle;
       product.price = updatedPrice;
       if (image) {
+        fileHelper.deleteFile(product.imageUrl);
         product.imageUrl = image.path;
       }
       product.description = updatedDesc;
@@ -159,7 +162,14 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.deleteOne({ _id: prodId, userId: req.user._id })
+  Product.findById(prodId)
+    .then((product) => {
+      if (!product) {
+        return next(new Error('Product not found'));
+      }
+      fileHelper.deleteFile(product.imageUrl);
+      return Product.deleteOne({ _id: prodId, userId: req.user._id });
+    })
     .then(() => {
       console.log('Deleted Product');
       res.redirect('/admin/products');
